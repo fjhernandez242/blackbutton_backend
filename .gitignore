@@ -1,0 +1,35 @@
+# Entorno virtual
+venv/
+env/
+.venv/
+
+# Paquetes Python
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+
+# Bases de datos locales
+db.sqlite3
+
+# Archivos de la base de datos de Django
+*.log
+*.pot
+*.mo
+*.hprof
+
+# Archivos de media/subidos por el usuario
+/media/
+
+# Archivos estáticos
+/static_collected/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# VS Code
+.vscode/

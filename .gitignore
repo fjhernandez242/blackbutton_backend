@@ -1,6 +1,7 @@
 # Entorno virtual
 venv/
 env/
+.env/
 .venv/
 
 # Paquetes Python

@@ -27,28 +27,27 @@ def productos(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def agregar_producto(request):
-    # form = CatalogoForm(request.POST, request.FILES)
-    form = request.data
-    # exist_trabajo = catalogo_model.objects.filter(guia=form.cleaned_data['guia'])
-    exist_trabajo = catalogo_model.objects.filter(guia=form['guia'])
-    if exist_trabajo.exists():
-        return Response({ "error": "Ya existe un producto con esta guia" })
-    try:
-        catalogo_model.objects.create(
-                guia = form['guia'],
-                producto = form['producto'],
-                precio = form['precio'],
-                dimensiones = form['dimensiones'],
-                imagen = form['imagen'],
-                fecha_registro = timezone.now()
-            )
-    except:
-        return Response({ "error": "Algo salio mal" })
+    form = CatalogoForm(request.POST, request.FILES)
+    # form = request.data
+    if form.is_valid():
+        exist_producto = catalogo_model.objects.filter(producto=form.cleaned_data['producto'])
+        # exist_trabajo = catalogo_model.objects.filter(guia=form['guia'])
+        if exist_producto.exists():
+            return Response({ "error": "Ya existe un producto con este nombre" })
+        try:
+            catalogo_model.objects.create(
+                    producto = form.cleaned_data['producto'],
+                    precio = form.cleaned_data['precio'],
+                    dimensiones = form.cleaned_data['dimensiones'],
+                    imagen = form.cleaned_data['imagen'],
+                    fecha_registro = timezone.now()
+                )
+        except:
+            return Response({ "error": "Algo salio mal" })
 
-    return Response({ "success": "Producto cargado" }, status=status.HTTP_200_OK)
-# if form.is_valid():
-# else:
-#     return Response({ "error": "Formulario invalido" })
+        return Response({ "success": "Producto cargado" }, status=status.HTTP_200_OK)
+    else:
+        return Response({ "error": "Formulario invalido" })
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
@@ -59,7 +58,7 @@ def editar_producto(request):
     if not exist_producto.exists():
         return Response({ "warning": "No existe el producto" }, status=status.HTTP_404_NOT_FOUND)
     # Verifica que no exista un duplicado con la misma colocación y formato
-    duplicado = catalogo_model.objects.filter(guia=form['guia']).exclude(id=form['id'])  # Excluye el actual registro para permitir la actualización
+    duplicado = catalogo_model.objects.filter(producto=form['producto']).exclude(id=form['id'])  # Excluye el actual registro para permitir la actualización
 
     if duplicado.exists():
         return Response({ "warning": "¡Ya existe un registro con esa colocación y formato!" }, status=status.HTTP_304_NOT_MODIFIED)
@@ -87,3 +86,18 @@ def eliminar_producto(request):
     producto.delete()
 
     return Response({ "success": "Producto borrado" }, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+# @authentication_classes([TokenAuthentication])
+# @permission_classes([IsAuthenticated])
+def getProductoById(request):
+    data = request.data
+
+    exist_producto = catalogo_model.objects.filter(id=data['id'])
+
+    if not exist_producto.exists():
+        return Response({ "error": "No existe el producto" }, status=status.HTTP_404_NOT_FOUND)
+    producto = catalogo_model.objects.get(id=data['id'])
+
+    serializer = CatalogoSerializer(instance=producto)
+    return Response({ "producto": serializer.data }, status=status.HTTP_200_OK)
